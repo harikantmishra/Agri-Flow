@@ -2,13 +2,13 @@ import {
   createApi,
   fetchBaseQuery
 } from "@reduxjs/toolkit/query/react";
-const render = "https://agri-flow.onrender.com/"
+
 
 export const api = createApi({
   reducerPath: "api",
 
   baseQuery: fetchBaseQuery({
-    baseUrl: "render",
+    baseUrl: "http://localhost:5000/api",
 
     prepareHeaders: (
       headers,
