@@ -2,13 +2,14 @@ import {
   createApi,
   fetchBaseQuery
 } from "@reduxjs/toolkit/query/react";
+import { API_BASE_URL } from "../config/api";
 
 
 export const api = createApi({
   reducerPath: "api",
 
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://localhost:5000/api",
+    baseUrl: API_BASE_URL,
 
     prepareHeaders: (
       headers,
@@ -122,6 +123,9 @@ getAdminPayments: builder.query({
   query: () => "/payments/admin",
   providesTags: ["Payment"]
 }),
+getPaymentInvoice: builder.query({
+  query: (id) => `/payments/invoice/${id}`
+}),
 
 updatePayment: builder.mutation({
   query: ({ id, status }) => ({
@@ -137,6 +141,9 @@ updatePayment: builder.mutation({
 getAdminProcurement: builder.query({
   query: () => "/procurement/admin",
   providesTags: ["Procurement"]
+}),
+getPaymentInvoice: builder.query({
+  query: (id) => `/payments/invoice/${id}`,
 }),
 
 updateProcurement: builder.mutation({
@@ -162,6 +169,7 @@ export const {
   useGetAdminQueueQuery,
   useGetMyBookingsQuery,
   useUpdateBookingStatusMutation,
+  useGetPaymentInvoiceQuery,
   useCreateBookingMutation,
   useGetQueueQuery,
   useGetAdminProcurementQuery,
@@ -170,5 +178,6 @@ useUpdateProcurementMutation,
   useGetAdminPaymentsQuery,
 useUpdatePaymentMutation,
   useGetMyPaymentsQuery,
-  useGetAdminDashboardQuery
+  useGetAdminDashboardQuery,
+  
 } = api;

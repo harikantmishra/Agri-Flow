@@ -136,6 +136,9 @@ export default function Navbar() {
               <Link to="/payments">
                 {t.payment}
               </Link>
+              
+               
+
 
             </>
           )}
@@ -161,6 +164,7 @@ export default function Navbar() {
               <Link to="/admin/payments">
                   Payments
               </Link>
+              
 
             </>
           )}

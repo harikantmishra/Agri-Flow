@@ -8,7 +8,8 @@ import {
 
 import {
   getAdminPayments,
-  updatePayment
+  updatePayment,
+    getPaymentInvoice
 } from "../controllers/paymentController.js";
 
 const router = express.Router();
@@ -18,6 +19,12 @@ router.get(
   protect,
   adminOnly,
   getAdminPayments
+);
+
+router.get(
+  "/invoice/:id",
+  protect,
+  getPaymentInvoice
 );
 
 router.put(

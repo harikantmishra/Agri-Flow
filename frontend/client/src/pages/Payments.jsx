@@ -127,6 +127,21 @@ export default function Payments() {
 
               </div>
 
+
+{payment.status === "paid" && (
+  <button
+    onClick={() =>
+      window.open(
+        `/payment-invoice/${payment._id}`,
+        "_blank"
+      )
+    }
+    className="mt-5 bg-green-700 text-white px-5 py-2 rounded hover:bg-green-800"
+  >
+    View Tax Invoice
+  </button>
+)}
+
             </div>
 
           ))}

@@ -11,6 +11,7 @@ import {
 import {
   loginSuccess
 } from "../redux/authSlice";
+import { API_BASE_URL } from "../config/api";
 
 export default function Register() {
 
@@ -45,7 +46,7 @@ export default function Register() {
 
       const response =
         await fetch(
-          "http://localhost:5000/api/auth/register",
+          `${API_BASE_URL}/auth/register`,
           {
             method: "POST",
 

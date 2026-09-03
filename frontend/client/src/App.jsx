@@ -1,8 +1,10 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
+
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminDashboard from "./pages/AdminDashboard";
+import TaxInvoice from "./pages/TaxInvoice";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -69,6 +71,10 @@ export default function App() {
       <AdminPayments />
     </ProtectedRoute>
   }
+/>
+<Route
+  path="/payment-invoice/:id"
+  element={<TaxInvoice />}
 />
 
 
