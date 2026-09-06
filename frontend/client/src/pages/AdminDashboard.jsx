@@ -110,12 +110,30 @@ export default function AdminDashboard() {
 
       </div>
 
-      <Link
-  to="/admin/queue"
-  className="inline-block mt-7 bg-green-700 text-white px-5 py-3 rounded"
->
-  Live Queue / लाइव कतार
-</Link>
+      <div className="flex flex-wrap gap-3 mt-7">
+
+  <Link
+    to="/admin/queue"
+    className="bg-green-700 text-white px-5 py-3 rounded"
+  >
+    Live Queue / लाइव कतार
+  </Link>
+
+  <Link
+    to="/admin/procurement"
+    className="bg-blue-600 text-white px-5 py-3 rounded"
+  >
+    Procurement / खरीद
+  </Link>
+
+  <Link
+    to="/admin/payments"
+    className="bg-purple-600 text-white px-5 py-3 rounded"
+  >
+    Payments / भुगतान
+  </Link>
+
+</div>
 
     </main>
   );
