@@ -34,11 +34,15 @@ const bookingSchema = new mongoose.Schema(
       required: true
     },
 
-    tokenNumber: {
-      type: Number,
-      required: true
-    },
+   tokenNumber: {
+  type: Number,
+  required: true
+},
 
+approxReportingTime: {
+  type: String,
+  default: null
+},
     status: {
       type: String,
       enum: [

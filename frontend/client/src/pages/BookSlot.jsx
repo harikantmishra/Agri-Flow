@@ -18,19 +18,6 @@ import {
 } from "lucide-react";
 
 export default function BookSlot() {
-  const {
-    data: centres = [],
-    isLoading: centresLoading,
-    isError: centresError,
-  } = useGetCentresQuery();
-
-  const [
-    createBooking,
-    {
-      isLoading: bookingLoading,
-    },
-  ] = useCreateBookingMutation();
-
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
@@ -41,6 +28,18 @@ export default function BookSlot() {
     slot: "09:00 AM - 10:00 AM",
   });
 
+  const {
+    data: centres = [],
+    isLoading: centresLoading,
+    isError: centresError,
+  } = useGetCentresQuery(form.date || undefined);
+
+  const [
+    createBooking,
+    {
+      isLoading: bookingLoading,
+    },
+  ] = useCreateBookingMutation();
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState(false);
 
@@ -48,6 +47,17 @@ export default function BookSlot() {
     (centre) =>
       centre._id === form.centreId
   );
+
+const centreFull =
+  selectedCentre &&
+  selectedCentre.remainingCapacity <= 0;
+
+const requestedQuantity = Number(form.quantity || 0);
+
+const insufficientCapacity =
+  selectedCentre &&
+  requestedQuantity >
+    Number(selectedCentre.remainingCapacity || 0);
 
   const handleChange = (field, value) => {
     setForm((previous) => ({
@@ -70,6 +80,26 @@ export default function BookSlot() {
       );
       return;
     }
+
+    if (
+  selectedCentre &&
+  selectedCentre.remainingCapacity <= 0
+) {
+  setMessage(
+    "This procurement centre is full for today. Please select another centre."
+  );
+  return;
+}
+if (
+  selectedCentre &&
+  Number(form.quantity) >
+    Number(selectedCentre.remainingCapacity)
+) {
+  setMessage(
+    `Only ${selectedCentre.remainingCapacity} Quintal capacity is available for this date.`
+  );
+  return;
+}
 
     if (!form.crop) {
       setMessage(
@@ -109,7 +139,7 @@ export default function BookSlot() {
       );
 
       setTimeout(() => {
-        navigate("/dashboard");
+        navigate(`/queue/${form.centreId}`);
       }, 2000);
 
     } catch (error) {
@@ -210,19 +240,18 @@ export default function BookSlot() {
                   : "Select Procurement Centre / केंद्र चुनें"}
               </option>
 
-              {centres.map((centre) => (
-                <option
-                  key={centre._id}
-                  value={centre._id}
-                >
-                  {centre.name} —{" "}
-                  {centre.district}{" "}
-                  {centre.remainingCapacity !==
-                    undefined
-                    ? `(Capacity: ${centre.remainingCapacity})`
-                    : ""}
-                </option>
-              ))}
+             {centres.map((centre) => (
+  <option
+    key={centre._id}
+    value={centre._id}
+    disabled={centre.remainingCapacity <= 0}
+  >
+    {centre.name} — {centre.district} —{" "}
+    {centre.remainingCapacity > 0
+      ? `${centre.remainingCapacity} slots remaining`
+      : "Centre Full"}
+  </option>
+))}
 
             </select>
 
@@ -249,16 +278,22 @@ export default function BookSlot() {
                   </div>
 
                   <div>
-                    <span className="text-slate-500">
-                      Available Capacity
-                    </span>
+  <span className="text-slate-500">
+    Available Capacity
+  </span>
 
-                    <p className="font-medium text-green-700">
-                      {selectedCentre.remainingCapacity ??
-                        "—"}{" "}
-                      Quintal
-                    </p>
-                  </div>
+  <p className="font-medium text-green-700">
+    {selectedCentre.remainingCapacity ?? "—"}{" "}
+    Quintal remaining
+  </p>
+</div>
+
+                  {centreFull && (
+  <p className="mt-3 text-sm font-semibold text-red-600">
+    This procurement centre is full for today.
+    Please select another centre.
+  </p>
+)}
 
                   <div>
                     <span className="text-slate-500">
@@ -506,16 +541,24 @@ export default function BookSlot() {
             <button
               type="button"
               onClick={submit}
-              disabled={
-                bookingLoading ||
-                centresLoading
-              }
+          disabled={
+  bookingLoading ||
+  centresLoading ||
+  centreFull ||
+  insufficientCapacity
+}
               className="w-full bg-green-700 hover:bg-green-800 disabled:bg-slate-400 text-white py-3 rounded-lg font-semibold transition"
             >
 
-              {bookingLoading
-                ? "Booking... / बुकिंग हो रही है..."
-                : "Confirm Booking / स्लॉट बुक करें"}
+            {bookingLoading
+  ? "Booking... / बुकिंग हो रही है..."
+  : centreFull
+  ? "Centre Full / केंद्र भरा हुआ है"
+  : insufficientCapacity
+  ? "Only " +
+    selectedCentre.remainingCapacity +
+    " Quintal Available"
+  : "Confirm Booking / स्लॉट बुक करें"}
 
             </button>
 

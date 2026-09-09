@@ -129,6 +129,10 @@ export default function Navbar() {
                 {t.bookSlot}
               </Link>
 
+              <Link to="/queue">
+                {t.queue}
+              </Link>
+
               <Link to="/procurement">
                 {t.procurement}
               </Link>
@@ -151,6 +155,10 @@ export default function Navbar() {
 
               <Link to="/admin/dashboard">
                 Admin Dashboard
+              </Link>
+
+              <Link to="/admin/centres">
+              Centre Management
               </Link>
 
               <Link to="/admin/queue">

@@ -30,16 +30,22 @@ export const api = createApi({
   }),
 
   tagTypes: [
-    "Booking",
-    "Queue",
-    "Procurement",
-    "Payment"
-  ],
+  "Booking",
+  "Queue",
+  "Procurement",
+  "Payment",
+  "Centre",
+  "AdminDashboard"
+],
 
   endpoints: (builder) => ({
     getCentres: builder.query({
-      query: () => "/centres"
-    }),
+  query: (date) =>
+    date
+      ? `/centres?date=${date}`
+      : "/centres",
+  providesTags: ["Centre"],
+}),
 
     getMyBookings: builder.query({
       query: () => "/bookings/my",
@@ -47,18 +53,42 @@ export const api = createApi({
         pollingInterval:5000
     }),
 
-    createBooking: builder.mutation({
-      query: (data) => ({
-        url: "/bookings",
-        method: "POST",
-        body: data
-      }),
+    getAdminCentres: builder.query({
+  query: () => "/centres/admin",
+  providesTags: ["Centre"]
+}),
 
-      invalidatesTags: [
-        "Booking",
-        "Queue"
-      ]
-    }),
+createCentre: builder.mutation({
+  query: (data) => ({
+    url: "/centres/admin",
+    method: "POST",
+    body: data
+  }),
+  invalidatesTags: ["Centre"]
+}),
+
+updateCentre: builder.mutation({
+  query: ({ id, ...data }) => ({
+    url: `/centres/admin/${id}`,
+    method: "PUT",
+    body: data
+  }),
+  invalidatesTags: ["Centre"]
+}),
+
+ createBooking: builder.mutation({
+  query: (data) => ({
+    url: "/bookings",
+    method: "POST",
+    body: data,
+  }),
+
+  invalidatesTags: [
+    "Booking",
+    "Queue",
+    "Centre",
+  ],
+}),
 
     getQueue: builder.query({
       query: (centreId) =>
@@ -142,9 +172,6 @@ getAdminProcurement: builder.query({
   query: () => "/procurement/admin",
   providesTags: ["Procurement"]
 }),
-getPaymentInvoice: builder.query({
-  query: (id) => `/payments/invoice/${id}`,
-}),
 
 updateProcurement: builder.mutation({
   query: ({ id, ...data }) => ({
@@ -159,7 +186,7 @@ updateProcurement: builder.mutation({
     getAdminDashboard: builder.query({
       query: () => "/admin/dashboard",
 
-      providesTags:["adminDashboard"]
+      providesTags:["AdminDashboard"]
     })
   })
 });
@@ -179,5 +206,8 @@ useUpdateProcurementMutation,
 useUpdatePaymentMutation,
   useGetMyPaymentsQuery,
   useGetAdminDashboardQuery,
+  useGetAdminCentresQuery,
+useCreateCentreMutation,
+useUpdateCentreMutation,
   
 } = api;

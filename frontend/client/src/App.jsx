@@ -12,10 +12,12 @@ import AdminPayments from "./pages/AdminPayments";
 import Dashboard from "./pages/Dashboard";
 import BookSlot from "./pages/BookSlot";
 import Queue from "./pages/Queue";
+import QueueSelector from "./pages/QueueSelector";
 import Procurement from "./pages/Procurement";
 import Payments from "./pages/Payments";
 import AdminRoute from "./components/AdminRoute";
 import AdminQueue from "./pages/AdminQueue";
+import AdminCentres from "./pages/AdminCentres";
 import AdminProcurement from "./pages/AdminProcurement";
 export default function App() {
   return (
@@ -54,7 +56,14 @@ export default function App() {
             </AdminRoute>
           }
         />
-
+         <Route
+  path="/admin/centres"
+  element={
+    <ProtectedRoute>
+      <AdminCentres />
+    </ProtectedRoute>
+  }
+/>
         <Route
           path="/admin/procurement"
           element={
@@ -65,11 +74,11 @@ export default function App() {
         />
         
 <Route
-  path="/admin/payments"
+  path="/admin/centres"
   element={
-    <ProtectedRoute>
-      <AdminPayments />
-    </ProtectedRoute>
+    <AdminRoute>
+      <AdminCentres />
+    </AdminRoute>
   }
 />
 <Route
@@ -84,6 +93,15 @@ export default function App() {
           element={
             <ProtectedRoute>
               <BookSlot />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/queue"
+          element={
+            <ProtectedRoute>
+              <QueueSelector />
             </ProtectedRoute>
           }
         />

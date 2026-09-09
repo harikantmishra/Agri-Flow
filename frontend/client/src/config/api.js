@@ -8,3 +8,5 @@ const defaultApiUrl = import.meta.env.PROD
 export const API_BASE_URL = (
   configuredApiUrl || defaultApiUrl
 ).replace(/\/$/, "");
+
+console.log(API_BASE_URL);

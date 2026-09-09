@@ -1,35 +1,70 @@
 import {
-  useParams
+  useParams,
 } from "react-router-dom";
 
 import {
-  useGetQueueQuery
+  useSelector,
+} from "react-redux";
+
+import {
+  useGetQueueQuery,
+  useGetMyBookingsQuery,
 } from "../redux/api";
 
 import {
   Clock,
   Users,
-  Activity
+  Activity,
 } from "lucide-react";
+
 
 export default function Queue() {
 
-  const { centreId } =
-    useParams();
+  const { centreId } = useParams();
+
+  /* =========================
+     LOGGED-IN FARMER
+  ========================= */
+
+  const user = useSelector(
+    (state) => state.auth.user
+  );
+
+
+  /* =========================
+     LIVE QUEUE
+  ========================= */
 
   const {
     data,
     isLoading,
-    error
-  } =
-    useGetQueueQuery(
-      centreId,
-      {
-        pollingInterval: 10000
-      }
-    );
+    error,
+  } = useGetQueueQuery(
+    centreId,
+    {
+      pollingInterval: 10000,
+    }
+  );
 
-  if (isLoading) {
+
+  /* =========================
+     FARMER BOOKINGS
+  ========================= */
+
+  const {
+    data: myBookings = [],
+    isLoading: myBookingsLoading,
+  } = useGetMyBookingsQuery();
+
+
+  /* =========================
+     LOADING
+  ========================= */
+
+  if (
+    isLoading ||
+    myBookingsLoading
+  ) {
     return (
       <div className="p-10 text-center">
         Loading queue...
@@ -37,7 +72,12 @@ export default function Queue() {
     );
   }
 
-  if (error) {
+
+  /* =========================
+     ERROR
+  ========================= */
+
+  if (error || !data) {
     return (
       <div className="p-10 text-center text-red-600">
         Unable to load queue
@@ -45,20 +85,357 @@ export default function Queue() {
     );
   }
 
-  const waitTime =
-    data.totalWaiting *
-    data.averageProcessingMinutes;
+
+  /* =========================
+     SAFE DATA
+  ========================= */
+
+  const queue = Array.isArray(
+    data.queue
+  )
+    ? data.queue
+    : [];
+
+
+  const currentToken =
+    Number(data.currentToken) || 0;
+
+
+  const averageProcessingMinutes =
+    Number(
+      data.averageProcessingMinutes
+    ) || 7;
+
+
+  const totalWaiting =
+    Number(data.totalWaiting) || 0;
+
+
+  /* =========================
+     FIND FARMER BOOKING
+  ========================= */
+
+  const myBooking =
+    myBookings.find(
+      (booking) => {
+
+        const bookingCentre =
+          booking.centre?._id ||
+          booking.centre?.id ||
+          booking.centre;
+
+        return (
+          String(bookingCentre) ===
+          String(centreId)
+        );
+      }
+    );
+
+
+  /* =========================
+     FARMER TOKEN
+  ========================= */
+
+  const myToken =
+    Number(
+      myBooking?.tokenNumber
+    ) || 0;
+
+
+  /* =========================
+     FARMERS AHEAD
+  ========================= */
+
+const farmersAhead =
+  myToken
+    ? Math.max(
+        myToken -
+          Number(currentToken || 0) -
+          1,
+        0
+      )
+    : 0;
+
+
+  /* =========================
+     ESTIMATED WAIT
+  ========================= */
+
+  const estimatedWait =
+    farmersAhead *
+    averageProcessingMinutes;
+
+
+  /* =========================
+     SLOT START TIME
+  ========================= */
+
+  const getSlotStartMinutes = (
+    slot
+  ) => {
+
+    if (!slot) {
+      return null;
+    }
+
+    const slotStart =
+      slot.split(" - ")[0];
+
+    const parts =
+      slotStart.split(" ");
+
+    if (parts.length !== 2) {
+      return null;
+    }
+
+    const time = parts[0];
+
+    const modifier =
+      parts[1].toUpperCase();
+
+    let [hours, minutes] =
+      time
+        .split(":")
+        .map(Number);
+
+    if (
+      Number.isNaN(hours) ||
+      Number.isNaN(minutes)
+    ) {
+      return null;
+    }
+
+    if (
+      modifier === "PM" &&
+      hours !== 12
+    ) {
+      hours += 12;
+    }
+
+    if (
+      modifier === "AM" &&
+      hours === 12
+    ) {
+      hours = 0;
+    }
+
+    return (
+      hours * 60 +
+      minutes
+    );
+  };
+
+
+  /* =========================
+     APPROXIMATE REPORTING TIME
+  ========================= */
+
+  const getApproximateTime = () => {
+
+    if (!myBooking?.slot) {
+      return "-";
+    }
+
+    const slotStartMinutes =
+      getSlotStartMinutes(
+        myBooking.slot
+      );
+
+    if (
+      slotStartMinutes === null
+    ) {
+      return "-";
+    }
+
+    const now = new Date();
+
+    const currentMinutes =
+      now.getHours() * 60 +
+      now.getMinutes();
+
+
+    /*
+      If slot has not started,
+      use slot start time.
+
+      If slot has already started,
+      use current time.
+    */
+
+    const baseMinutes =
+      currentMinutes <
+      slotStartMinutes
+        ? slotStartMinutes
+        : currentMinutes;
+
+
+    const estimatedMinutes =
+      baseMinutes +
+      estimatedWait;
+
+
+    let hours =
+      Math.floor(
+        estimatedMinutes / 60
+      ) % 24;
+
+
+    const minutes =
+      estimatedMinutes % 60;
+
+
+    const modifier =
+      hours >= 12
+        ? "PM"
+        : "AM";
+
+
+    if (hours === 0) {
+      hours = 12;
+    } else if (hours > 12) {
+      hours -= 12;
+    }
+
+
+    return `${String(
+      hours
+    ).padStart(
+      2,
+      "0"
+    )}:${String(
+      minutes
+    ).padStart(
+      2,
+      "0"
+    )} ${modifier}`;
+  };
+
+
+  const approximateTime =
+    getApproximateTime();
+
 
   return (
     <main className="max-w-5xl mx-auto px-4 py-10">
+
+      {/* =========================
+          HEADER
+      ========================= */}
 
       <h2 className="text-2xl font-bold">
         लाइव कतार
       </h2>
 
-      <p className="text-slate-500">
-        {data.centre.name}
+      <p className="text-slate-500 mt-1">
+        {data.centre?.name ||
+          "Procurement Centre"}
       </p>
+
+
+      {/* =========================
+          FARMER STATUS
+      ========================= */}
+
+      {myBooking && (
+
+        <div className="bg-green-50 border border-green-200 rounded-xl p-6 mt-7">
+
+          <h3 className="text-xl font-bold text-green-800">
+            आपकी कतार स्थिति
+          </h3>
+
+
+          <div className="grid md:grid-cols-4 gap-5 mt-5">
+
+            {/* YOUR TOKEN */}
+
+            <div>
+
+              <p className="text-sm text-slate-500">
+                Your Token
+              </p>
+
+              <p className="text-2xl font-bold text-green-700">
+                #{myToken}
+              </p>
+
+            </div>
+
+
+            {/* CURRENT TOKEN */}
+
+            <div>
+
+              <p className="text-sm text-slate-500">
+                Current Token
+              </p>
+
+              <p className="text-2xl font-bold">
+                {currentToken
+                  ? `#${currentToken}`
+                  : "-"}
+              </p>
+
+            </div>
+
+
+            {/* FARMERS AHEAD */}
+
+            <div>
+
+              <p className="text-sm text-slate-500">
+                Farmers Ahead
+              </p>
+
+              <p className="text-2xl font-bold">
+                {farmersAhead}
+              </p>
+
+            </div>
+
+
+            {/* APPROX TIME */}
+
+            <div>
+
+              <p className="text-sm text-slate-500">
+                Approx. Reporting Time
+              </p>
+
+              <p className="text-xl font-bold text-green-700">
+                {approximateTime}
+              </p>
+
+            </div>
+
+          </div>
+
+
+          {/* INFORMATION */}
+
+          <div className="mt-5 bg-white border border-green-200 rounded-lg p-4">
+
+            <p className="text-green-800 font-medium">
+              🕐 कृपया अपने अनुमानित आने के समय से
+              10–15 मिनट पहले केन्द्र पर पहुंचें।
+            </p>
+
+            <p className="text-sm text-slate-500 mt-2">
+              अनुमानित समय वर्तमान कतार और
+              औसत processing time के आधार पर है।
+              वास्तविक समय बदल सकता है।
+            </p>
+
+          </div>
+
+        </div>
+
+      )}
+
+
+      {/* =========================
+          SUMMARY CARDS
+      ========================= */}
 
       <div className="grid md:grid-cols-3 gap-5 mt-7">
 
@@ -66,25 +443,64 @@ export default function Queue() {
           icon={<Activity />}
           title="Current Token"
           value={
-            data.currentToken
-              ? `#${data.currentToken}`
+            currentToken
+              ? `#${currentToken}`
               : "-"
           }
         />
 
+
         <Card
           icon={<Users />}
           title="Farmers Waiting"
-          value={data.totalWaiting}
+          value={totalWaiting}
         />
+
 
         <Card
           icon={<Clock />}
-          title="Estimated Wait"
-          value={`${waitTime} min`}
+          title="Your Estimated Wait"
+          value={
+            myBooking
+              ? `${estimatedWait} min`
+              : "-"
+          }
         />
 
       </div>
+
+
+      {/* =========================
+          QUEUE INFORMATION
+      ========================= */}
+
+      <div className="bg-white border rounded-lg mt-7 p-5">
+
+        <h3 className="font-semibold">
+          Queue Information
+        </h3>
+
+        <p className="text-sm text-slate-500 mt-2">
+          Average processing time:
+          {" "}
+          <strong>
+            {averageProcessingMinutes}
+            {" "}minutes
+          </strong>
+          {" "}per farmer.
+        </p>
+
+        <p className="text-sm text-slate-500 mt-1">
+          Queue updates automatically
+          every 10 seconds.
+        </p>
+
+      </div>
+
+
+      {/* =========================
+          QUEUE LIST
+      ========================= */}
 
       <div className="bg-white border rounded-lg mt-7 overflow-hidden">
 
@@ -92,29 +508,66 @@ export default function Queue() {
           Queue Status
         </div>
 
-        {data.queue.map(
-          (item, index) => (
-            <div
-              key={item._id}
-              className="flex justify-between p-5 border-b"
-            >
 
-              <div>
-                <span className="font-bold">
-                  #{item.tokenNumber}
+        {queue.length === 0 ? (
+
+          <div className="p-8 text-center text-slate-500">
+            No farmers are currently waiting.
+          </div>
+
+        ) : (
+
+          queue.map((item) => {
+
+            const tokenNumber =
+              Number(
+                item.tokenNumber
+              ) || 0;
+
+
+            return (
+
+              <div
+                key={item._id}
+                className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-5 border-b last:border-b-0"
+              >
+
+                <div>
+
+                  <div className="flex items-center gap-3">
+
+                    <span className="font-bold text-lg">
+                      #{tokenNumber}
+                    </span>
+
+                    <span className="text-slate-600">
+                      {item.farmer?.name ||
+                        "Farmer"}
+                    </span>
+
+                  </div>
+
+
+                  {item.slot && (
+
+                    <p className="text-sm text-slate-500 mt-1">
+                      Slot: {item.slot}
+                    </p>
+
+                  )}
+
+                </div>
+
+
+                <span className="text-sm bg-slate-100 px-3 py-1 rounded-full">
+                  {item.status}
                 </span>
 
-                <span className="ml-4 text-slate-600">
-                  {item.farmer?.name}
-                </span>
               </div>
 
-              <span className="text-sm">
-                {item.status}
-              </span>
+            );
+          })
 
-            </div>
-          )
         )}
 
       </div>
@@ -123,10 +576,15 @@ export default function Queue() {
   );
 }
 
+
+/* =====================================================
+   CARD
+===================================================== */
+
 function Card({
   icon,
   title,
-  value
+  value,
 }) {
   return (
     <div className="bg-white border rounded-lg p-6">
