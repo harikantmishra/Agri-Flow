@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 
 import { translations } from "../i18n/translations";
+import farmerFieldImage from "../assets/farmer-field.png";
 
 export default function Home() {
   const language = useSelector(
@@ -33,8 +34,7 @@ export default function Home() {
       <section
         className="relative bg-cover bg-center bg-no-repeat text-white"
         style={{
-          backgroundImage:
-            "url('/public/images/farmer-field.jpg.png')"
+          backgroundImage: `url(${farmerFieldImage})`
         }}
       >
 
