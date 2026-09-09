@@ -4,14 +4,13 @@ import User from "../models/User.js";
 const protect = async (req, res, next) => {
   try {
     const header = req.headers.authorization;
+    const token = req.cookies?.agri_token || (header?.startsWith("Bearer ") ? header.split(" ")[1] : null);
 
-    if (!header || !header.startsWith("Bearer ")) {
+    if (!token) {
       return res.status(401).json({
         message: "Authentication required"
       });
     }
-
-    const token = header.split(" ")[1];
 
     const decoded = jwt.verify(
       token,

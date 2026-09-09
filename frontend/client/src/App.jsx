@@ -8,7 +8,6 @@ import TaxInvoice from "./pages/TaxInvoice";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import AdminPayments from "./pages/AdminPayments";
 import Dashboard from "./pages/Dashboard";
 import BookSlot from "./pages/BookSlot";
 import Queue from "./pages/Queue";

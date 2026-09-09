@@ -12,6 +12,7 @@ import {
 import {
   logout
 } from "../redux/authSlice";
+import { API_BASE_URL } from "../config/api";
 
 import {
   toggleLanguage
@@ -47,7 +48,7 @@ export default function Navbar() {
 
 
   const handleLogout = () => {
-
+    fetch(`${API_BASE_URL}/auth/logout`, { method: "POST", credentials: "include" }).catch(() => {});
     dispatch(logout());
 
     navigate("/login");

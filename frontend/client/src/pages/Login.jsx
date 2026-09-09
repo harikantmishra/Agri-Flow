@@ -54,7 +54,8 @@ export default function Login() {
       const response = await fetch(
         `${API_BASE_URL}/auth/login`,
         {
-          method: "POST",
+            method: "POST",
+            credentials: "include",
 
           headers: {
             "Content-Type": "application/json"
@@ -148,6 +149,7 @@ export default function Login() {
         `${API_BASE_URL}/auth/verify-login-otp`,
         {
           method: "POST",
+          credentials: "include",
 
           headers: {
             "Content-Type": "application/json"

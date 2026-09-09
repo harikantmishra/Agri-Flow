@@ -3,10 +3,6 @@ import {
 } from "react-router-dom";
 
 import {
-  useSelector,
-} from "react-redux";
-
-import {
   useGetQueueQuery,
   useGetMyBookingsQuery,
 } from "../redux/api";
@@ -25,10 +21,6 @@ export default function Queue() {
   /* =========================
      LOGGED-IN FARMER
   ========================= */
-
-  const user = useSelector(
-    (state) => state.auth.user
-  );
 
 
   /* =========================

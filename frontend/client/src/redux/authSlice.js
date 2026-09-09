@@ -1,7 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const savedUser = localStorage.getItem("agriUser");
-const savedToken = localStorage.getItem("agriToken");
 
 let user = null;
 
@@ -13,7 +12,7 @@ try {
   ) {
     user = JSON.parse(savedUser);
   }
-} catch (error) {
+  } catch {
   console.error("Invalid agriUser:", savedUser);
 
   localStorage.removeItem("agriUser");
@@ -26,18 +25,13 @@ const authSlice = createSlice({
 
   initialState: {
     user,
-    token:
-      savedToken &&
-      savedToken !== "undefined" &&
-      savedToken !== "null"
-        ? savedToken
-        : null,
+    token: user ? "cookie" : null,
   },
 
   reducers: {
     loginSuccess: (state, action) => {
       state.user = action.payload.user;
-      state.token = action.payload.token;
+      state.token = "cookie";
 
       if (action.payload.user) {
         localStorage.setItem(
@@ -46,12 +40,6 @@ const authSlice = createSlice({
         );
       }
 
-      if (action.payload.token) {
-        localStorage.setItem(
-          "agriToken",
-          action.payload.token
-        );
-      }
     },
 
     logout: (state) => {
@@ -59,7 +47,6 @@ const authSlice = createSlice({
       state.token = null;
 
       localStorage.removeItem("agriUser");
-      localStorage.removeItem("agriToken");
     },
   },
 });

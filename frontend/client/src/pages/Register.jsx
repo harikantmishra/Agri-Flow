@@ -49,6 +49,7 @@ export default function Register() {
           `${API_BASE_URL}/auth/register`,
           {
             method: "POST",
+            credentials: "include",
 
             headers: {
               "Content-Type":
