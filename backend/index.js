@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
 
 
 import connectDB from "./config/db.js";
@@ -26,22 +27,13 @@ const allowedOrigins = (process.env.FRONTEND_URLS || "http://localhost:5173")
 
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
-      return callback(new Error("Origin not allowed by CORS"));
-    },
-    credentials: true
+    origin: true,
+    credentials: true,
   })
 );
 
 app.use(express.json());
-app.use((req, _res, next) => {
-  req.cookies = Object.fromEntries((req.headers.cookie || "").split(";").filter(Boolean).map((part) => {
-    const index = part.indexOf("=");
-    return [part.slice(0, index).trim(), decodeURIComponent(part.slice(index + 1).trim())];
-  }));
-  next();
-});
+app.use(cookieParser());
 app.set("trust proxy", 1);
 
 app.get("/", (req, res) => {
