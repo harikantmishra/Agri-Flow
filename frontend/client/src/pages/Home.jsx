@@ -34,7 +34,7 @@ export default function Home() {
         className="relative bg-cover bg-center bg-no-repeat text-white"
         style={{
           backgroundImage:
-            "url('/images/farmer-field.jpg.png')"
+            "url('/public/images/farmer-field.jpg.png')"
         }}
       >
 
