@@ -21,13 +21,15 @@ const generateToken = (id) => {
   );
 };
 
-const setAuthCookie = (res, token) => res.cookie("agri_token", token, {
+const setAuthCookie = (res, token) => {
+  return res.cookie("agri_token", token, {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  secure: false,
+  sameSite: "lax",
   maxAge: 7 * 24 * 60 * 60 * 1000,
   path: "/"
-});
+  });
+};
 
 // ===============================
 // FARMER REGISTRATION

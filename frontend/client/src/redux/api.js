@@ -2,8 +2,8 @@ import {
   createApi,
   fetchBaseQuery
 } from "@reduxjs/toolkit/query/react";
-import { API_BASE_URL } from "../config/api";
 
+import { API_BASE_URL } from "../config/api";
 
 export const api = createApi({
   reducerPath: "api",
@@ -11,172 +11,188 @@ export const api = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: API_BASE_URL,
     credentials: "include",
-
-    prepareHeaders: (headers) => {
-      return headers;
-    }
   }),
 
   tagTypes: [
-  "Booking",
-  "Queue",
-  "Procurement",
-  "Payment",
-  "Centre",
-  "AdminDashboard"
-],
+    "Booking",
+    "Queue",
+    "Procurement",
+    "Payment",
+    "Centre",
+    "AdminDashboard",
+  ],
 
   endpoints: (builder) => ({
+
+    // --------------------
+    // CENTRES
+    // --------------------
+
     getCentres: builder.query({
-  query: (date) =>
-    date
-      ? `/centres?date=${date}`
-      : "/centres",
-  providesTags: ["Centre"],
-}),
+      query: (date) =>
+        date ? `/centres?date=${date}` : "/centres",
+
+      providesTags: ["Centre"],
+    }),
+
+    getAdminCentres: builder.query({
+      query: () => "/centres/admin",
+      providesTags: ["Centre"],
+    }),
+
+    createCentre: builder.mutation({
+      query: (data) => ({
+        url: "/centres/admin",
+        method: "POST",
+        body: data,
+      }),
+
+      invalidatesTags: ["Centre"],
+    }),
+
+    updateCentre: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `/centres/admin/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+
+      invalidatesTags: ["Centre"],
+    }),
+
+    // --------------------
+    // BOOKINGS
+    // --------------------
 
     getMyBookings: builder.query({
       query: () => "/bookings/my",
       providesTags: ["Booking"],
-        pollingInterval:5000
     }),
 
-    getAdminCentres: builder.query({
-  query: () => "/centres/admin",
-  providesTags: ["Centre"]
-}),
+    createBooking: builder.mutation({
+      query: (data) => ({
+        url: "/bookings",
+        method: "POST",
+        body: data,
+      }),
 
-createCentre: builder.mutation({
-  query: (data) => ({
-    url: "/centres/admin",
-    method: "POST",
-    body: data
-  }),
-  invalidatesTags: ["Centre"]
-}),
+      invalidatesTags: [
+        "Booking",
+        "Queue",
+        "Centre",
+      ],
+    }),
 
-updateCentre: builder.mutation({
-  query: ({ id, ...data }) => ({
-    url: `/centres/admin/${id}`,
-    method: "PUT",
-    body: data
-  }),
-  invalidatesTags: ["Centre"]
-}),
+    updateBookingStatus: builder.mutation({
+      query: ({ id, status }) => ({
+        url: `/admin/booking/${id}/status`,
+        method: "PUT",
+        body: { status },
+      }),
 
- createBooking: builder.mutation({
-  query: (data) => ({
-    url: "/bookings",
-    method: "POST",
-    body: data,
-  }),
+      invalidatesTags: [
+        "Queue",
+        "Booking",
+      ],
+    }),
 
-  invalidatesTags: [
-    "Booking",
-    "Queue",
-    "Centre",
-  ],
-}),
+    // --------------------
+    // QUEUE
+    // --------------------
 
     getQueue: builder.query({
       query: (centreId) =>
         `/bookings/queue/${centreId}`,
 
-      providesTags: ["Queue"]
+      providesTags: (result, error, centreId) => [
+        { type: "Queue", id: centreId },
+      ],
     }),
+
+    getAdminQueue: builder.query({
+      query: ({ centreId, date } = {}) => {
+        const params = new URLSearchParams();
+
+        if (centreId) {
+          params.append("centreId", centreId);
+        }
+
+        if (date) {
+          params.append("date", date);
+        }
+
+        const queryString = params.toString();
+
+        return `/admin/queue${
+          queryString ? `?${queryString}` : ""
+        }`;
+      },
+
+      providesTags: ["Queue"],
+    }),
+
+    // --------------------
+    // PROCUREMENT
+    // --------------------
 
     getMyProcurement: builder.query({
       query: () => "/procurement/my",
       providesTags: ["Procurement"],
-      pollingInterval:5000
     }),
 
-       getMyPayments: builder.query({
-      query: () =>
-        "/procurement/payments",
-
-      providesTags: ["Payment"]
+    getAdminProcurement: builder.query({
+      query: () => "/procurement/admin",
+      providesTags: ["Procurement"],
     }),
-  
-getAdminQueue: builder.query({
-  query: ({ centreId, date } = {}) => {
 
-    const params = new URLSearchParams();
+    updateProcurement: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `/procurement/admin/${id}`,
+        method: "PUT",
+        body: data,
+      }),
 
-    if (centreId) {
-      params.append("centreId", centreId);
-    }
+      invalidatesTags: ["Procurement"],
+    }),
 
-    if (date) {
-      params.append("date", date);
-    }
+    // --------------------
+    // PAYMENTS
+    // --------------------
 
-    const queryString = params.toString();
+    getMyPayments: builder.query({
+      query: () => "/procurement/payments",
+      providesTags: ["Payment"],
+    }),
 
-    return `/admin/queue${
-      queryString
-        ? `?${queryString}`
-        : ""
-    }`;
-  },
+    getAdminPayments: builder.query({
+      query: () => "/payments/admin",
+      providesTags: ["Payment"],
+    }),
 
-  providesTags: ["Queue"]
+    getPaymentInvoice: builder.query({
+      query: (id) =>
+        `/payments/invoice/${id}`,
+    }),
 
+    updatePayment: builder.mutation({
+      query: ({ id, status }) => ({
+        url: `/payments/admin/${id}`,
+        method: "PUT",
+        body: { status },
+      }),
 
-}),
-updateBookingStatus: builder.mutation({
-  query: ({ id, status }) => ({
-    url: `/admin/booking/${id}/status`,
-    method: "PUT",
-    body: { status }
-  }),
+      invalidatesTags: ["Payment"],
+    }),
 
-  invalidatesTags: [
-    "Queue",
-    "Booking"
-  ]
-}),
-
-getAdminPayments: builder.query({
-  query: () => "/payments/admin",
-  providesTags: ["Payment"]
-}),
-getPaymentInvoice: builder.query({
-  query: (id) => `/payments/invoice/${id}`
-}),
-
-updatePayment: builder.mutation({
-  query: ({ id, status }) => ({
-    url: `/payments/admin/${id}`,
-    method: "PUT",
-    body: { status }
-  }),
-
-  invalidatesTags: ["Payment"]
-}),
-
-
-getAdminProcurement: builder.query({
-  query: () => "/procurement/admin",
-  providesTags: ["Procurement"]
-}),
-
-updateProcurement: builder.mutation({
-  query: ({ id, ...data }) => ({
-    url: `/procurement/admin/${id}`,
-    method: "PUT",
-    body: data
-  }),
-
-  invalidatesTags: ["Procurement"]
-}),
+    // --------------------
+    // ADMIN DASHBOARD
+    // --------------------
 
     getAdminDashboard: builder.query({
       query: () => "/admin/dashboard",
-
-      providesTags:["AdminDashboard"]
-    })
-  })
+      providesTags: ["AdminDashboard"],
+    }),
+  }),
 });
 
 export const {
@@ -188,14 +204,13 @@ export const {
   useCreateBookingMutation,
   useGetQueueQuery,
   useGetAdminProcurementQuery,
-useUpdateProcurementMutation,
+  useUpdateProcurementMutation,
   useGetMyProcurementQuery,
   useGetAdminPaymentsQuery,
-useUpdatePaymentMutation,
+  useUpdatePaymentMutation,
   useGetMyPaymentsQuery,
   useGetAdminDashboardQuery,
   useGetAdminCentresQuery,
-useCreateCentreMutation,
-useUpdateCentreMutation,
-  
+  useCreateCentreMutation,
+  useUpdateCentreMutation,
 } = api;

@@ -18,6 +18,7 @@ import AdminRoute from "./components/AdminRoute";
 import AdminQueue from "./pages/AdminQueue";
 import AdminCentres from "./pages/AdminCentres";
 import AdminProcurement from "./pages/AdminProcurement";
+import AdminPayments from "./pages/AdminPayments";
 export default function App() {
   return (
     <BrowserRouter>
@@ -66,9 +67,18 @@ export default function App() {
         <Route
           path="/admin/procurement"
           element={
-            <ProtectedRoute>
+            <AdminRoute>
               <AdminProcurement />
-            </ProtectedRoute>
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/payments"
+          element={
+            <AdminRoute>
+              <AdminPayments />
+            </AdminRoute>
           }
         />
         
