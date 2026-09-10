@@ -21,11 +21,14 @@ const generateToken = (id) => {
   );
 };
 
-const setAuthCookie = (res, token) => {
+const setAuthCookie = (res, token, req) => {
+  const isHttps =
+    req.secure || req.headers["x-forwarded-proto"] === "https";
+
   return res.cookie("agri_token", token, {
   httpOnly: true,
-  secure: false,
-  sameSite: "lax",
+  secure: isHttps,
+  sameSite: isHttps ? "none" : "lax",
   maxAge: 7 * 24 * 60 * 60 * 1000,
   path: "/"
   });
@@ -75,7 +78,7 @@ export const register = async (req, res) => {
     });
 
     const token = generateToken(user._id);
-    setAuthCookie(res, token);
+    setAuthCookie(res, token, req);
 
     res.status(201).json({
       message: "Registration successful",
@@ -145,7 +148,7 @@ export const login = async (req, res) => {
     if (user.role === "admin") {
 
       const token = generateToken(user._id);
-      setAuthCookie(res, token);
+      setAuthCookie(res, token, req);
 
       return res.json({
         message: "Login successful",
@@ -300,7 +303,7 @@ export const verifyLoginOtp = async (req, res) => {
 
     // Generate JWT only after OTP verification
     const token = generateToken(farmer._id);
-    setAuthCookie(res, token);
+    setAuthCookie(res, token, req);
 
     return res.status(200).json({
       message: "Login successful",
