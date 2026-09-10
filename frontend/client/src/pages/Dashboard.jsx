@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
+import AIFarmerAssistant from "../components/AIFarmerAssistant";
+import { useGetMyBookingsQuery } from "../redux/api";
 import {
   CalendarDays,
   CreditCard,
@@ -17,6 +19,15 @@ export default function Dashboard() {
   );
 
   const isHindi = language === "hi";
+
+  const { data: bookings = [], isLoading: bookingsLoading } =
+    useGetMyBookingsQuery();
+
+  const activeBookings = bookings.filter(
+    (booking) =>
+      booking.status !== "completed" &&
+      booking.status !== "cancelled"
+  );
 
   return (
     <main className="min-h-screen bg-slate-50">
@@ -98,6 +109,31 @@ export default function Dashboard() {
                   : "Current Procurement Status"}
               </p>
 
+              {bookingsLoading ? (
+                <h2 className="text-xl font-bold text-slate-800 mt-1">
+                  Loading booking...
+                </h2>
+              ) : activeBookings.length > 0 ? (
+                <div className="mt-2 flex flex-wrap gap-3">
+                  {activeBookings.map((booking) => (
+                    <div key={booking._id} className="border rounded-lg p-3 w-full sm:w-[260px] flex-none min-h-[135px]">
+                      <h2 className="text-lg font-bold text-slate-800">
+                        {booking.crop} — Token #{booking.tokenNumber}
+                      </h2>
+                      <p className="text-sm text-slate-500 mt-1">
+                        {booking.centre?.name || "Procurement Centre"} · {booking.slot}
+                      </p>
+                      <p className="text-sm text-slate-500 mt-1">
+                        Date: {new Date(booking.date).toLocaleDateString("en-IN")}
+                      </p>
+                      <p className="text-sm text-green-700 mt-1 font-medium">
+                        Status: {booking.status}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+              <>
               <h2 className="text-xl font-bold text-slate-800 mt-1">
                 {isHindi
                   ? "कोई सक्रिय स्लॉट नहीं"
@@ -109,9 +145,11 @@ export default function Dashboard() {
                   ? "फसल बेचने के लिए अपना स्लॉट बुक करें"
                   : "Book a slot to sell your crop"}
               </p>
+              </>
+              )}
             </div>
 
-            <Link
+            {false && <Link
               to="/book-slot"
               className="bg-green-700 hover:bg-green-800 text-white px-5 py-3 rounded-lg font-medium inline-flex items-center justify-center gap-2"
             >
@@ -120,11 +158,15 @@ export default function Dashboard() {
                 : "Book Slot"}
 
               <ArrowRight size={18} />
-            </Link>
+            </Link>}
 
           </div>
 
         </section>
+
+        
+        {/* AI Assistant */}
+<AIFarmerAssistant isHindi={isHindi} />
 
         {/* Services */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-8">

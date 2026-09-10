@@ -223,83 +223,9 @@ const farmersAhead =
   ========================= */
 
   const getApproximateTime = () => {
-
-    if (!myBooking?.slot) {
-      return "-";
-    }
-
-    const slotStartMinutes =
-      getSlotStartMinutes(
-        myBooking.slot
-      );
-
-    if (
-      slotStartMinutes === null
-    ) {
-      return "-";
-    }
-
-    const now = new Date();
-
-    const currentMinutes =
-      now.getHours() * 60 +
-      now.getMinutes();
-
-
-    /*
-      If slot has not started,
-      use slot start time.
-
-      If slot has already started,
-      use current time.
-    */
-
-    const baseMinutes =
-      currentMinutes <
-      slotStartMinutes
-        ? slotStartMinutes
-        : currentMinutes;
-
-
-    const estimatedMinutes =
-      baseMinutes +
-      estimatedWait;
-
-
-    let hours =
-      Math.floor(
-        estimatedMinutes / 60
-      ) % 24;
-
-
-    const minutes =
-      estimatedMinutes % 60;
-
-
-    const modifier =
-      hours >= 12
-        ? "PM"
-        : "AM";
-
-
-    if (hours === 0) {
-      hours = 12;
-    } else if (hours > 12) {
-      hours -= 12;
-    }
-
-
-    return `${String(
-      hours
-    ).padStart(
-      2,
-      "0"
-    )}:${String(
-      minutes
-    ).padStart(
-      2,
-      "0"
-    )} ${modifier}`;
+    // Use the value calculated by the backend when the booking was created.
+    // This keeps the displayed value consistent with the booking record.
+    return myBooking?.approxReportingTime || "-";
   };
 
 

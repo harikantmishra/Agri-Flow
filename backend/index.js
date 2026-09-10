@@ -3,7 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 
-
+import aiRoutes from "./routes/aiRoutes.js";
 import connectDB from "./config/db.js";
 
 import authRoutes from "./routes/authRoutes.js";
@@ -42,6 +42,8 @@ app.get("/", (req, res) => {
       "AGRI-FLOW API is running"
   });
 });
+
+app.use("/api/ai", aiRoutes);
 
 app.use(
   "/api/admin",
